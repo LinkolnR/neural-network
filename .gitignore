@@ -3,3 +3,6 @@ env/
 .cache/
 .vscode/
 target/
+
+.env
+ignore/

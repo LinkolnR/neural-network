@@ -1,4 +1,5 @@
-markdown-grid-tables
+    markdown-grid-tables
+python-dotenv
 markdown-exec[ansi]
 mkdocs-badges
 mkdocs-material
