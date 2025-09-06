@@ -1,35 +1,25 @@
-# Template de Entrega
+# Página Inicial
 
 
 ???+ info inline end "Edição"
 
-    2025.1
+    2025.2
 
 
-## Grupo/Kit X
+## Repositório
 
-1. João da Silva
-1. Pedro de Souza
-1. Maria Oliveira
-1. Grupo K
-    - João da Silva
-    - Pedro de Souza
+### Lincoln Melo
 
 
-
-!!! tip "Instruções"
-
-    Vocês devem utilizar este template como um bloco de notas para registrar o que foi feito e o que falta fazer. Vocês devem adicionar as informações necessárias.
-    O template deve ser editado e atualizado a cada entrega, registrando assim a data de entrega e o que foi feito até o momento via Git.
 
 ## Entregas
 
-- [x] Roteiro 1 - Data 23/02/2025
-- [ ] Roteiro 2
-- [ ] Roteiro 3
-- [ ] Roteiro 4
+- [x] Exercício 1 - Data 05/09/2025
+- [ ] Exercício 2
+- [ ] Exercício 3 
+- [ ] Exercício 4 
 - [ ] Projeto
-
+<!-- 
 ## Diagramas
 
 Use o [Mermaid](https://mermaid.js.org/intro/){:target='_blank'} para criar os diagramas de documentação.
@@ -97,4 +87,4 @@ Lorem ipsum dolor sit amet
 
 ## Referências
 
-[Material for MkDocs](https://squidfunk.github.io/mkdocs-material/reference/){:target='_blank'}
+[Material for MkDocs](https://squidfunk.github.io/mkdocs-material/reference/){:target='_blank'} -->

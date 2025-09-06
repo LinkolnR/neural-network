@@ -92,7 +92,7 @@ O dataset **Spaceship Titanic** é um problema de classificação binária para 
 --8<-- "docs/exercise1-data/q3/missing_data.py"
 ```
 
-#### 3.2 Pré-processamento Completo com Justificativas (2 pontos)
+#### 3.2 Pré-processamento Completo com Justificativas 
 
 ##### **Estratégia 1: Tratamento de Dados Faltantes**
 
@@ -166,8 +166,8 @@ X_normalized = (X - μ) / σ
 3. **Prevenção de Problemas**:
    - **Convergência Lenta**: Features dominantes mascararam outras
 
-#### 3.3 Visualizações Demonstrando o Impacto (1 ponto)
-
+#### 3.3 Visualizações Demonstrando o Impacto (Tive problema com os gráficos, então retirei essa parte)
+<!-- 
 ```python exec="1" html="1"
 --8<-- "docs/exercise1-data/q3/q3_simple.py"
 ```
@@ -193,74 +193,8 @@ X_normalized = (X - μ) / σ
 - **Sem normalização**: RoomService (escala 0-8000) dominaria Age (escala 0-80)
 - **Com normalização**: Ambas contribuem igualmente para a decisão
 
-#### 3.4 Conclusão e Validação
-
-**Pipeline Completo Implementado:**
-1. ✅ **Carregamento correto** dos dados com análise exploratória
-2. ✅ **Missing data** tratado com estratégias específicas por tipo
-3. ✅ **Encoding adequado** para cada categoria de feature  
-4. ✅ **Normalização otimizada** para função de ativação tanh
-5. ✅ **Visualizações claras** demonstrando cada transformação
-
-**Justificativas Teóricas Fundamentadas:**
-- Cada decisão embasada em teoria de redes neurais
-- Otimizações específicas para função tanh
-- Prevenção de problemas comuns (saturação, convergência lenta)
-
-**Dataset Final Preparado:**
-- Pronto para treinamento de redes neurais
-- Otimizado para ativação tanh
-- Sem missing values ou inconsistências
-- Features balanceadas e normalizadas
-
-O preprocessing resultou em um dataset robusto e otimizado, garantindo que a rede neural possa aprender eficientemente os padrões necessários para classificar corretamente os passageiros transportados.
-
-    
-<!-- 
-
-![Tela do Dashboard do MAAS](./maas.png)
-/// caption
-Dashboard do MAAS
-///
-
-Conforme ilustrado acima, a tela inicial do MAAS apresenta um dashboard com informações sobre o estado atual dos servidores gerenciados. O dashboard é composto por diversos painéis, cada um exibindo informações sobre um aspecto específico do ambiente gerenciado. Os painéis podem ser configurados e personalizados de acordo com as necessidades do usuário.
-
-### Tarefa 2
-
-## App
 
 
 
-### Tarefa 1
-
-### Tarefa 2
-
-Exemplo de diagrama
-
-```mermaid
-architecture-beta
-    group api(cloud)[API]
-
-    service db(database)[Database] in api
-    service disk1(disk)[Storage] in api
-    service disk2(disk)[Storage] in api
-    service server(server)[Server] in api
-
-    db:L -- R:server
-    disk1:T -- B:server
-    disk2:T -- B:db
-```
-
-[Mermaid](https://mermaid.js.org/syntax/architecture.html){:target="_blank"}
-
-## Questionário, Projeto ou Plano
-
-Esse seção deve ser preenchida apenas se houver demanda do roteiro.
-
-## Discussões
-
-Quais as dificuldades encontradas? O que foi mais fácil? O que foi mais difícil?
-
-## Conclusão
-
-O que foi possível concluir com a realização do roteiro? -->
+O preprocessing foi feito para que o dataset se tornasse mais otimizado, visando garantindo que a rede neural possa aprender eficientemente os padrões necessários para classificar corretamente.
+     -->
