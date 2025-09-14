@@ -8,68 +8,119 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 np.random.seed(42)
 
 def create_sample_data():
-    """Cria dados de amostra completos para demonstração do preprocessing do Spaceship Titanic"""
-    n_samples = 1000
+    """
+    Cria dados de amostra completos do Spaceship Titanic conforme descrito no main.md
     
-    # Features numéricas com diferentes escalas
+    Features Numéricas (6):
+    - Age: Idade do passageiro (0-80 anos)
+    - RoomService, FoodCourt, ShoppingMall, Spa, VRDeck: Gastos em créditos galácticos
+    
+    Features Categóricas (7):
+    - HomePlanet: Planeta de origem (Earth, Europa, Mars)
+    - CryoSleep: Em sono criogênico (True/False)
+    - Destination: Destino da viagem (3 planetas)
+    - VIP: Status VIP (True/False)
+    - Cabin: Localização da cabine (formato complexo)
+    - Name, PassengerId: Identificadores
+    """
+    n_samples = 8693  # Tamanho real do dataset
+    np.random.seed(42)  # Para reprodutibilidade
+    
+    # === FEATURES NUMÉRICAS (6 features) ===
+    
+    # Age: Idade do passageiro (0-80 anos)
     age = np.random.normal(29, 14, n_samples)
     age = np.clip(age, 0, 80)  # Idades entre 0-80
     
-    room_service = np.random.exponential(50, n_samples)
-    food_court = np.random.exponential(100, n_samples) 
-    spa = np.random.exponential(75, n_samples)
-    shopping_mall = np.random.exponential(60, n_samples)
-    vr_deck = np.random.exponential(40, n_samples)
+    # Gastos em créditos galácticos (distribuição exponencial - mais realista)
+    room_service = np.random.exponential(50, n_samples)  # Serviço de quarto
+    food_court = np.random.exponential(100, n_samples)   # Praça de alimentação  
+    shopping_mall = np.random.exponential(75, n_samples) # Shopping
+    spa = np.random.exponential(60, n_samples)           # Spa
+    vr_deck = np.random.exponential(80, n_samples)       # Deck VR
     
-    # Features categóricas
+    # === FEATURES CATEGÓRICAS (7 features) ===
+    
+    # HomePlanet: Planeta de origem (Earth, Europa, Mars)
     home_planets = np.random.choice(['Earth', 'Europa', 'Mars'], n_samples, p=[0.5, 0.3, 0.2])
+    
+    # Destination: Destino da viagem (3 planetas)
     destinations = np.random.choice(['TRAPPIST-1e', 'PSO J318.5-22', '55 Cancri e'], n_samples, p=[0.4, 0.3, 0.3])
     
-    # Simulação de cabines (Deck/Num/Side)
+    # Cabin: Localização da cabine (formato complexo: Deck/Num/Side)
     decks = np.random.choice(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'T'], n_samples)
     cabin_nums = np.random.randint(1, 2000, n_samples)
-    sides = np.random.choice(['P', 'S'], n_samples)
+    sides = np.random.choice(['P', 'S'], n_samples)  # Port/Starboard
     cabins = [f"{deck}/{num}/{side}" for deck, num, side in zip(decks, cabin_nums, sides)]
     
-    # Features booleanas
-    cryo_sleep = np.random.choice([True, False], n_samples, p=[0.3, 0.7])
-    vip = np.random.choice([True, False], n_samples, p=[0.1, 0.9])
+    # CryoSleep: Em sono criogênico (True/False)
+    cryo_sleep = np.random.choice([True, False], n_samples, p=[0.36, 0.64])
     
-    # Introduzir missing values conforme percentuais da seção 3.2
-    age[np.random.choice(n_samples, size=int(0.15*n_samples), replace=False)] = np.nan
+    # VIP: Status VIP (True/False)
+    vip = np.random.choice([True, False], n_samples, p=[0.02, 0.98])
+    
+    # Identificadores
+    passenger_ids = [f'{i:04d}_01' for i in range(n_samples)]
+    names = [f'Passenger{i:04d} Surname{i%100:02d}' for i in range(n_samples)]
+    
+    # === INTRODUZIR MISSING VALUES CONFORME SEÇÃO 3.2 ===
+    
+    print("Introduzindo missing values conforme percentuais da seção 3.2:")
+    
+    # Features Numéricas
+    age[np.random.choice(n_samples, size=int(0.150*n_samples), replace=False)] = np.nan
+    print("  • Age: ~15.0% missing")
+    
     room_service[np.random.choice(n_samples, size=int(0.104*n_samples), replace=False)] = np.nan
-    food_court[np.random.choice(n_samples, size=int(0.102*n_samples), replace=False)] = np.nan
-    shopping_mall[np.random.choice(n_samples, size=int(0.107*n_samples), replace=False)] = np.nan
-    spa[np.random.choice(n_samples, size=int(0.116*n_samples), replace=False)] = np.nan
-    vr_deck[np.random.choice(n_samples, size=int(0.112*n_samples), replace=False)] = np.nan
+    print("  • RoomService: ~10.4% missing")
     
-    # Missing values para categóricas
+    food_court[np.random.choice(n_samples, size=int(0.102*n_samples), replace=False)] = np.nan
+    print("  • FoodCourt: ~10.2% missing")
+    
+    shopping_mall[np.random.choice(n_samples, size=int(0.107*n_samples), replace=False)] = np.nan
+    print("  • ShoppingMall: ~10.7% missing")
+    
+    spa[np.random.choice(n_samples, size=int(0.116*n_samples), replace=False)] = np.nan
+    print("  • Spa: ~11.6% missing")
+    
+    vr_deck[np.random.choice(n_samples, size=int(0.112*n_samples), replace=False)] = np.nan
+    print("  • VRDeck: ~11.2% missing")
+    
+    # Features Categóricas
     home_planets_missing = np.random.choice(n_samples, size=int(0.011*n_samples), replace=False)
     for idx in home_planets_missing:
         home_planets[idx] = None
+    print("  • HomePlanet: ~1.1% missing")
         
     destinations_missing = np.random.choice(n_samples, size=int(0.011*n_samples), replace=False)
     for idx in destinations_missing:
         destinations[idx] = None
+    print("  • Destination: ~1.1% missing")
         
     cabins_missing = np.random.choice(n_samples, size=int(0.019*n_samples), replace=False)
     for idx in cabins_missing:
         cabins[idx] = None
+    print("  • Cabin: ~1.9% missing")
     
-    # Criar DataFrame
+    # Criar DataFrame com todas as features descritas no main.md
     df = pd.DataFrame({
-        'HomePlanet': home_planets,
-        'CryoSleep': cryo_sleep,
-        'Cabin': cabins,
-        'Destination': destinations,
-        'Age': age,
-        'VIP': vip,
-        'RoomService': room_service,
-        'FoodCourt': food_court,
-        'ShoppingMall': shopping_mall,
-        'Spa': spa,
-        'VRDeck': vr_deck
+        'PassengerId': passenger_ids,      # Identificador
+        'HomePlanet': home_planets,        # Categórica
+        'CryoSleep': cryo_sleep,          # Booleana
+        'Cabin': cabins,                  # Categórica complexa
+        'Destination': destinations,       # Categórica
+        'Age': age,                       # Numérica
+        'VIP': vip,                       # Booleana
+        'RoomService': room_service,      # Numérica
+        'FoodCourt': food_court,          # Numérica
+        'ShoppingMall': shopping_mall,    # Numérica
+        'Spa': spa,                       # Numérica
+        'VRDeck': vr_deck,               # Numérica
+        'Name': names                     # Identificador
     })
+    
+    print(f"\nDataset criado: {df.shape}")
+    print(f"Features: {list(df.columns)}")
     
     return df
 
@@ -82,9 +133,15 @@ def apply_preprocessing_strategies(df):
     """
     df_processed = df.copy()
     
+    # Remover identificadores que não são features para ML
+    identifier_cols = ['PassengerId', 'Name']
+    for col in identifier_cols:
+        if col in df_processed.columns:
+            df_processed = df_processed.drop(col, axis=1)
+    
     print("=== ESTRATÉGIA 1: TRATAMENTO DE DADOS FALTANTES ===")
     print("\nDados faltantes ANTES do tratamento:")
-    for col in df.columns:
+    for col in df_processed.columns:
         missing = df[col].isnull().sum()
         pct = (missing / len(df)) * 100
         if missing > 0:
@@ -199,19 +256,22 @@ def demonstrate_preprocessing():
     return df_original, df_processed, scaler
 
 def create_comprehensive_visualization():
-    """Cria visualização completa do impacto do preprocessing"""
+    """Cria visualização completa do impacto do preprocessing com features do main.md"""
     
-    # Executar preprocessing
+    # Executar preprocessing  
     df_original, df_processed, scaler = demonstrate_preprocessing()
     
-    # Selecionar features numéricas originais para comparação
-    numeric_original = ['Age', 'RoomService', 'FoodCourt', 'Spa']
+    # Features numéricas conforme descrito no main.md - Questão 3
+    # "Features Numéricas (6 features): Age, RoomService, FoodCourt, ShoppingMall, Spa, VRDeck"
+    numeric_features_from_main = ['Age', 'RoomService']  # Mostrar as duas principais
     
-    # Filtrar apenas features que existem no dataset processado
-    available_features = [f for f in numeric_original if f in df_processed.columns]
+    # Verificar se as features existem
+    available_features = [f for f in numeric_features_from_main if f in df_original.columns and f in df_processed.columns]
     
     if len(available_features) < 2:
-        print("Aviso: Poucas features numéricas disponíveis para visualização")
+        print("Erro: Features numéricas não encontradas nos dados")
+        print(f"Features disponíveis em df_original: {list(df_original.columns)}")
+        print(f"Features disponíveis em df_processed: {list(df_processed.columns)}")
         return None
     
     # Criar subplots
@@ -219,11 +279,11 @@ def create_comprehensive_visualization():
     fig.suptitle('Impacto Completo do Preprocessing para Redes Neurais\n(Dataset Spaceship Titanic - Estratégias Seção 3.2)', 
                  fontsize=16, fontweight='bold', y=0.98)
     
-    # Plotar as duas primeiras features disponíveis
-    for i, feature in enumerate(available_features[:2]):
+    # Plotar as features numéricas principais
+    for i, feature in enumerate(available_features):
         # ANTES: dados originais com missing values
         original_data = df_original[feature].dropna()
-        axes[i, 0].hist(original_data, bins=30, alpha=0.7, color='lightblue', edgecolor='black')
+        axes[i, 0].hist(original_data, bins=40, alpha=0.7, color='lightblue', edgecolor='black')
         axes[i, 0].set_title(f'{feature} - ANTES do Preprocessing\n(com missing values)')
         axes[i, 0].set_xlabel(feature)
         axes[i, 0].set_ylabel('Frequência')
@@ -236,6 +296,14 @@ def create_comprehensive_visualization():
                           label=f'μ={mean_orig:.1f}, σ={std_orig:.1f}')
         axes[i, 0].legend()
         
+        # Mostrar escalas originais problemáticas
+        min_val, max_val = original_data.min(), original_data.max()
+        range_val = max_val - min_val
+        axes[i, 0].text(0.05, 0.85, f'Range: [{min_val:.0f}, {max_val:.0f}]\nAmplitude: {range_val:.0f}', 
+                       transform=axes[i, 0].transAxes, fontsize=9,
+                       bbox=dict(boxstyle="round,pad=0.3", facecolor="orange", alpha=0.7),
+                       verticalalignment='top')
+        
         # Adicionar info sobre missing values
         missing_count = df_original[feature].isnull().sum()
         missing_pct = (missing_count / len(df_original)) * 100
@@ -246,13 +314,13 @@ def create_comprehensive_visualization():
         
         # DEPOIS: dados normalizados (Z-score)
         processed_data = df_processed[feature]
-        axes[i, 1].hist(processed_data, bins=30, alpha=0.7, color='lightcoral', edgecolor='black')
+        axes[i, 1].hist(processed_data, bins=40, alpha=0.7, color='lightcoral', edgecolor='black')
         axes[i, 1].set_title(f'{feature} - DEPOIS do Preprocessing\n(Z-score normalizado)')
         axes[i, 1].set_xlabel(f'{feature} (μ=0, σ=1)')
         axes[i, 1].set_ylabel('Frequência')
         axes[i, 1].grid(True, alpha=0.3)
         
-        # Destacar região ótima para tanh
+        # Destacar regiões importantes para tanh conforme main.md
         axes[i, 1].axvspan(-1, 1, alpha=0.2, color='green', label='Região Ótima\npara tanh (~68%)')
         axes[i, 1].axvspan(-2, 2, alpha=0.1, color='orange', label='Região Ativa\npara tanh (~95%)')
         axes[i, 1].axvline(0, color='red', linestyle='--', linewidth=2, label='μ=0')
@@ -261,41 +329,80 @@ def create_comprehensive_visualization():
         # Verificar estatísticas após normalização
         mean_norm = processed_data.mean()
         std_norm = processed_data.std()
+        
+        # Calcular quantos dados estão na região ótima
+        data_in_optimal = ((processed_data >= -1) & (processed_data <= 1)).sum()
+        pct_in_optimal = (data_in_optimal / len(processed_data)) * 100
+        
         axes[i, 1].text(0.05, 0.95, f'μ={mean_norm:.3f}, σ={std_norm:.3f}', 
                        transform=axes[i, 1].transAxes, fontsize=10,
+                       bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.7),
+                       verticalalignment='top')
+                       
+        axes[i, 1].text(0.05, 0.85, f'{pct_in_optimal:.1f}% na região\nótima [-1,+1]', 
+                       transform=axes[i, 1].transAxes, fontsize=9,
                        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.7),
                        verticalalignment='top')
     
     plt.tight_layout()
     
-    # Adicionar texto explicativo detalhado
+    # Adicionar texto explicativo detalhado conforme main.md
     textstr = '''ESTRATÉGIAS DE PREPROCESSING IMPLEMENTADAS (Seção 3.2):
 
 1. TRATAMENTO DE MISSING VALUES:
-   • Age: Mediana (preserva distribuição)
-   • Gastos: Zero (ausência = não utilizou)
-   • Categóricas: Moda (preserva proporções)
+   • Age (~15.0%): Mediana (preserva distribuição)
+   • RoomService (~10.4%): Zero (não utilizou serviço)
+   • FoodCourt (~10.2%): Zero (não utilizou serviço)
+   • ShoppingMall (~10.7%): Zero (não utilizou serviço)
+   • Spa (~11.6%): Zero (não utilizou serviço)
+   • VRDeck (~11.2%): Zero (não utilizou serviço)
+   • HomePlanet (~1.1%): Moda (preserva distribuição)
+   • Destination (~1.1%): Moda (preserva distribuição)
+   • Cabin (~1.9%): Moda (preserva distribuição)
 
 2. ENCODING CATEGÓRICO:
-   • One-Hot: HomePlanet, Destination, Cabin
-   • Label: CryoSleep, VIP (booleanas)
+   • One-Hot: HomePlanet → 3 colunas, Destination → 3 colunas
+   • One-Hot: Cabin (Deck/Side) → múltiplas colunas binárias
+   • Label: CryoSleep (False→0, True→1), VIP (False→0, True→1)
 
-3. NORMALIZAÇÃO Z-SCORE:
-   • X_norm = (X - μ) / σ
-   • Otimizada para função tanh
-   • Região ativa: [-2, +2], ótima: [-1, +1]'''
+3. NORMALIZAÇÃO Z-SCORE OTIMIZADA PARA TANH:
+   • Transformação: X_norm = (X - μ) / σ
+   • Dados centralizados: μ=0, σ=1
+   • Região ativa tanh: [-2, +2], região ótima: [-1, +1]
+   • ~68% dos dados na região ótima da função tanh'''
     
-    fig.text(0.02, 0.02, textstr, fontsize=9, 
-            bbox=dict(boxstyle="round,pad=0.5", facecolor="wheat", alpha=0.9))
+    fig.text(0.02, 0.02, textstr, fontsize=8, 
+            bbox=dict(boxstyle="round,pad=0.5", facecolor="wheat", alpha=0.95))
     
     return fig
 
+def generate_preprocessing_demonstration():
+    """Função principal para gerar demonstração do preprocessing"""
+    print("=== DEMONSTRAÇÃO COMPLETA DO PREPROCESSING ===")
+    print("Dataset: Spaceship Titanic")
+    print("Baseado nas estratégias da seção 3.2 do main.md\n")
+    
+    fig = create_comprehensive_visualization()
+    if fig is not None:
+        print("\n=== VISUALIZAÇÃO GERADA COM SUCESSO ===")
+        return fig
+    else:
+        print("\n❌ ERRO: Falha na geração da visualização")
+        return None
+
 # Executar demonstração completa e gerar SVG
 if __name__ == "__main__":
-    fig = create_comprehensive_visualization()
-    if fig:
-        buffer = StringIO()
-        plt.savefig(buffer, format="svg", transparent=True, bbox_inches='tight', dpi=300)
-        print(buffer.getvalue())
-    else:
-        print("Erro na geração da visualização")
+    try:
+        fig = generate_preprocessing_demonstration()
+        if fig:
+            buffer = StringIO()
+            plt.savefig(buffer, format="svg", transparent=True, bbox_inches='tight', dpi=150)
+            svg_content = buffer.getvalue()
+            plt.close(fig)  # Liberar memória
+            print(svg_content)
+        else:
+            print("Falha na geração do gráfico")
+    except Exception as e:
+        print(f"Erro durante execução: {e}")
+        import traceback
+        traceback.print_exc()
