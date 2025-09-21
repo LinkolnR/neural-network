@@ -1,0 +1,8 @@
+Accuracy: 0.9850
+TP=93, TN=104, FP=3, FN=0
+Final train loss: 0.065691
+Hidden layers: [16, 16]
+Learning rate: 0.05
+Epochs: 300
+Seed: 42
+Class sep: 1.6, flip_y: 0.01

@@ -1,0 +1,11 @@
+Accuracy: 0.9533
+Confusion Matrix (rows=true, cols=pred):
+[[ 98   0   4]
+ [  1  88   2]
+ [  0   7 100]]
+Final train loss: 0.138598
+Hidden layers: [64, 64, 32]
+Learning rate: 0.05
+Epochs: 450
+Seed: 42
+Class sep: 1.6, flip_y: 0.01, clusters: (2, 3, 4)
