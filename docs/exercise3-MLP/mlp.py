@@ -1,4 +1,3 @@
-import argparse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple
@@ -6,17 +5,8 @@ from typing import List, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 
-try:
-    from sklearn.datasets import make_classification
-except Exception as exc:  # pragma: no cover
-    raise RuntimeError(
-        "scikit-learn is required only for data generation (make_classification)."
-    ) from exc
+from sklearn.datasets import make_classification
 
-
-# -----------------------------
-# Data generation
-# -----------------------------
 
 def generate_uneven_cluster_data(
     total_samples: int = 1000,
@@ -56,7 +46,6 @@ def generate_uneven_cluster_data(
         class_sep=class_sep,
         random_state=seed,
     )
-    # Ensure label is 0
     y0 = np.zeros_like(y0)
 
     X1, y1 = make_classification(
@@ -67,18 +56,16 @@ def generate_uneven_cluster_data(
         n_repeated=0,
         n_classes=2,
         n_clusters_per_class=2,
-        weights=[0.0, 1.0],  # class 1 only
+        weights=[0.0, 1.0],  
         flip_y=flip_y,
         class_sep=class_sep,
         random_state=seed + 1,
     )
-    # Ensure label is 1
     y1 = np.ones_like(y1)
 
     X = np.vstack([X0, X1])
     y = np.concatenate([y0, y1])
 
-    # Shuffle
     idx = rng.permutation(len(y))
     X = X[idx]
     y = y[idx]
@@ -105,11 +92,6 @@ def standardize_fit_transform(
     mean = X_train.mean(axis=0, keepdims=True)
     std = X_train.std(axis=0, keepdims=True) + 1e-12
     return (X_train - mean) / std, (X_test - mean) / std, mean, std
-
-
-# -----------------------------
-# MLP from scratch (NumPy only for tensors)
-# -----------------------------
 
 
 def relu(z: np.ndarray) -> np.ndarray:
@@ -152,7 +134,7 @@ class MLPBinaryClassifier:
 
     - Loss: Binary Cross Entropy
     - Optimizer: Vanilla Gradient Descent
-    - Initialization: He for ReLU layers; Xavier for final sigmoid layer
+    - Initialization: Random normal with small standard deviation
     """
 
     def __init__(
@@ -177,13 +159,7 @@ class MLPBinaryClassifier:
 
         for i in range(len(layer_dims) - 1):
             fan_in, fan_out = layer_dims[i], layer_dims[i + 1]
-            if i < len(layer_dims) - 2:
-                # Hidden layer: He init for ReLU
-                std = np.sqrt(2.0 / fan_in)
-            else:
-                # Output layer: Xavier for sigmoid
-                std = np.sqrt(1.0 / fan_in)
-            W = self.rng.normal(0.0, std, size=(fan_in, fan_out)).astype(np.float64)
+            W = self.rng.normal(0.0, 0.1, size=(fan_in, fan_out)).astype(np.float64)
             b = np.zeros((1, fan_out), dtype=np.float64)
             self.layers.append(LayerParams(weights=W, bias=b))
 
@@ -192,13 +168,11 @@ class MLPBinaryClassifier:
         activations = [X]
         pre_activations = []
         A = X
-        # Hidden layers with ReLU
         for i, layer in enumerate(self.layers[:-1]):
             Z = A @ layer.weights + layer.bias
             A = relu(Z)
             pre_activations.append(Z)
             activations.append(A)
-        # Output layer with sigmoid
         last = self.layers[-1]
         Z = activations[-1] @ last.weights + last.bias
         A = sigmoid(Z)
@@ -216,7 +190,6 @@ class MLPBinaryClassifier:
         m = y.shape[0]
         grads: List[Tuple[np.ndarray, np.ndarray]] = [None] * len(self.layers)  # type: ignore
 
-        # Output layer
         A_last = activations[-1]  # shape (m, 1)
         dZ = (A_last - y.reshape(-1, 1)) / m
         A_prev = activations[-2]
@@ -224,7 +197,6 @@ class MLPBinaryClassifier:
         db = np.sum(dZ, axis=0, keepdims=True)
         grads[-1] = (dW, db)
 
-        # Backprop through hidden layers
         dA = dZ @ self.layers[-1].weights.T
         for l in range(len(self.layers) - 2, -1, -1):
             Z = pre_activations[l]
@@ -261,11 +233,6 @@ class MLPBinaryClassifier:
     def predict(self, X: np.ndarray, threshold: float = 0.5) -> np.ndarray:
         probs = self.predict_proba(X)
         return (probs >= threshold).astype(np.int64)
-
-
-# -----------------------------
-# Evaluation & visualization
-# -----------------------------
 
 
 def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -340,77 +307,71 @@ def plot_confusion_matrix(tp: int, tn: int, fp: int, fn: int, out_path: Path) ->
     plt.close()
 
 
-# -----------------------------
-# CLI
-# -----------------------------
+def plot_data_distribution_ex2(X: np.ndarray, y: np.ndarray, out_path: Path) -> None:
+    plt.figure(figsize=(6, 5))
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap="bwr", edgecolor="k", s=20)
+    plt.title("Data Distribution (raw features)")
+    plt.xlabel("x1")
+    plt.ylabel("x2")
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=160)
+    plt.close()
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Binary classification with scratch MLP")
-    parser.add_argument("--samples", type=int, default=1000, help="Total number of samples")
-    parser.add_argument("--epochs", type=int, default=300, help="Training epochs")
-    parser.add_argument("--lr", type=float, default=0.05, help="Learning rate")
-    parser.add_argument(
-        "--hidden", type=int, nargs="+", default=[16, 16], help="Hidden layer sizes"
-    )
-    parser.add_argument("--seed", type=int, default=42, help="Random seed")
-    parser.add_argument("--class_sep", type=float, default=1.5, help="Class separability")
-    parser.add_argument("--flip_y", type=float, default=0.01, help="Label noise fraction")
-    args = parser.parse_args()
+    # Defaults aligned with the report
+    samples = 1000
+    epochs = 300
+    lr = 0.05
+    hidden = [16, 16]
+    seed = 42
+    class_sep = 1.6
+    flip_y = 0.01
 
     out_dir = Path(__file__).parent
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate data
     X, y = generate_uneven_cluster_data(
-        total_samples=args.samples,
+        total_samples=samples,
         n_features=2,
         n_informative=2,
         n_redundant=0,
-        class_sep=args.class_sep,
-        flip_y=args.flip_y,
-        seed=args.seed,
+        class_sep=class_sep,
+        flip_y=flip_y,
+        seed=seed,
     )
+    # Plot data distribution (raw features)
+    plot_data_distribution_ex2(X, y, out_dir / "data_distribution.png")
 
-    # Split
-    X_train, X_test, y_train, y_test = train_test_split_np(X, y, test_size=0.2, seed=args.seed)
+    X_train, X_test, y_train, y_test = train_test_split_np(X, y, test_size=0.2, seed=seed)
 
-    # Standardize using train statistics
     X_train_s, X_test_s, mean, std = standardize_fit_transform(X_train, X_test)
 
-    # Model
-    model = MLPBinaryClassifier(
-        input_dim=2, hidden_layers=args.hidden, learning_rate=args.lr, seed=args.seed
-    )
+    model = MLPBinaryClassifier(input_dim=2, hidden_layers=hidden, learning_rate=lr, seed=seed)
 
-    # Train
-    losses = model.fit(X_train_s, y_train, epochs=args.epochs)
+    losses = model.fit(X_train_s, y_train, epochs=epochs)
 
-    # Evaluate
     y_test_prob = model.predict_proba(X_test_s)
     y_test_pred = (y_test_prob >= 0.5).astype(np.int64)
     acc = accuracy_score(y_test, y_test_pred)
     tp, tn, fp, fn = confusion_matrix_counts(y_test, y_test_pred)
 
-    # Save plots
     plot_training_loss(losses, out_dir / "training_loss.png")
     plot_decision_boundary(model, X_train_s, y_train, X_test_s, y_test, out_dir / "decision_boundary.png")
     plot_confusion_matrix(tp, tn, fp, fn, out_dir / "confusion_matrix.png")
 
-    # Save metrics
     metrics_text = (
         f"Accuracy: {acc:.4f}\n"
         f"TP={tp}, TN={tn}, FP={fp}, FN={fn}\n"
         f"Final train loss: {losses[-1]:.6f}\n"
-        f"Hidden layers: {args.hidden}\n"
-        f"Learning rate: {args.lr}\n"
-        f"Epochs: {args.epochs}\n"
-        f"Seed: {args.seed}\n"
-        f"Class sep: {args.class_sep}, flip_y: {args.flip_y}\n"
+        f"Hidden layers: {hidden}\n"
+        f"Learning rate: {lr}\n"
+        f"Epochs: {epochs}\n"
+        f"Seed: {seed}\n"
+        f"Class sep: {class_sep}, flip_y: {flip_y}\n"
     )
     (out_dir / "metrics.txt").write_text(metrics_text, encoding="utf-8")
 
-    # Print key results to stdout
     print(metrics_text)
 
 
