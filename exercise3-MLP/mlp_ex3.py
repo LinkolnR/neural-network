@@ -1,4 +1,3 @@
-import argparse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple
@@ -6,17 +5,8 @@ from typing import List, Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 
-try:
-    from sklearn.datasets import make_classification
-except Exception as exc:  # pragma: no cover
-    raise RuntimeError(
-        "scikit-learn is required only for data generation (make_classification)."
-    ) from exc
+from sklearn.datasets import make_classification
 
-
-# -----------------------------
-# Data generation (3 classes, uneven clusters per class)
-# -----------------------------
 
 
 def generate_uneven_clusters_multiclass(
@@ -41,7 +31,6 @@ def generate_uneven_clusters_multiclass(
         raise ValueError("class_cluster_counts must have length 3")
 
     rng = np.random.default_rng(seed)
-    # roughly balance per-class samples
     base = total_samples // 3
     rem = total_samples - base * 3
     per_class = [base, base, base]
@@ -100,11 +89,6 @@ def standardize_fit_transform(
     return (X_train - mean) / std, (X_test - mean) / std, mean, std
 
 
-# -----------------------------
-# MLP from scratch (NumPy only)
-# Reuses Exercise 2 structure, adapted for softmax and 3 classes
-# -----------------------------
-
 
 def relu(z: np.ndarray) -> np.ndarray:
     return np.maximum(0.0, z)
@@ -115,7 +99,6 @@ def relu_grad(z: np.ndarray) -> np.ndarray:
 
 
 def softmax(z: np.ndarray) -> np.ndarray:
-    # Stable softmax per row
     z_max = np.max(z, axis=1, keepdims=True)
     exp_z = np.exp(z - z_max)
     return exp_z / (np.sum(exp_z, axis=1, keepdims=True) + 1e-12)
@@ -145,7 +128,7 @@ class MLPClassifier:
     Multiclass MLP with ReLU hidden layers and softmax output.
     Loss: Categorical Cross-Entropy
     Optimizer: Vanilla Gradient Descent
-    Initialization: He (hidden), Xavier (output)
+    Initialization: Random normal with small standard deviation
     """
 
     def __init__(
@@ -173,11 +156,7 @@ class MLPClassifier:
 
         for i in range(len(layer_dims) - 1):
             fan_in, fan_out = layer_dims[i], layer_dims[i + 1]
-            if i < len(layer_dims) - 2:
-                std = np.sqrt(2.0 / fan_in)  # He for ReLU
-            else:
-                std = np.sqrt(1.0 / fan_in)  # Xavier for softmax layer
-            W = self.rng.normal(0.0, std, size=(fan_in, fan_out)).astype(np.float64)
+            W = self.rng.normal(0.0, 0.1, size=(fan_in, fan_out)).astype(np.float64)
             b = np.zeros((1, fan_out), dtype=np.float64)
             self.layers.append(LayerParams(weights=W, bias=b))
 
@@ -185,13 +164,11 @@ class MLPClassifier:
         activations = [X]
         pre_activations = []
         A = X
-        # Hidden layers with ReLU
         for layer in self.layers[:-1]:
             Z = A @ layer.weights + layer.bias
             A = relu(Z)
             pre_activations.append(Z)
             activations.append(A)
-        # Output layer with softmax
         last = self.layers[-1]
         Z = activations[-1] @ last.weights + last.bias
         A = softmax(Z)
@@ -205,7 +182,6 @@ class MLPClassifier:
         m = y_onehot.shape[0]
         grads: List[Tuple[np.ndarray, np.ndarray]] = [None] * len(self.layers)  # type: ignore
 
-        # Output layer gradient: (A - Y)/m
         A_last = activations[-1]
         dZ = (A_last - y_onehot) / m
         A_prev = activations[-2]
@@ -213,7 +189,6 @@ class MLPClassifier:
         db = np.sum(dZ, axis=0, keepdims=True)
         grads[-1] = (dW, db)
 
-        # Propagate backward through hidden layers
         dA = dZ @ self.layers[-1].weights.T
         for l in range(len(self.layers) - 2, -1, -1):
             Z = pre_activations[l]
@@ -253,9 +228,6 @@ class MLPClassifier:
         return np.argmax(probs, axis=1).astype(np.int64)
 
 
-# -----------------------------
-# Evaluation & visualization
-# -----------------------------
 
 
 def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -283,10 +255,8 @@ def plot_training_loss(losses: List[float], out_path: Path) -> None:
 
 
 def pca_project_2d(X: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    # Center
     mean = X.mean(axis=0, keepdims=True)
     Xc = X - mean
-    # Covariance and eigen decomposition
     cov = (Xc.T @ Xc) / (X.shape[0] - 1)
     eigvals, eigvecs = np.linalg.eigh(cov)
     order = np.argsort(eigvals)[::-1]
@@ -308,9 +278,9 @@ def plot_pca_scatter(
     Z_test = (X_test - mean) @ W
 
     plt.figure(figsize=(7, 5))
-    plt.scatter(Z_train[:, 0], Z_train[:, 1], c=yhat_train, cmap="tab10", edgecolor="k", s=18, label="train (pred)")
-    plt.scatter(Z_test[:, 0], Z_test[:, 1], c=yhat_test, cmap="tab10", marker="^", edgecolor="k", s=24, label="test (pred)")
-    plt.title("PCA 2D Projection colored by predicted class")
+    plt.scatter(Z_train[:, 0], Z_train[:, 1], c=y_train, cmap="tab10", edgecolor="k", s=18, label="train (true)")
+    plt.scatter(Z_test[:, 0], Z_test[:, 1], c=y_test, cmap="tab10", marker="^", edgecolor="k", s=24, label="test (true)")
+    plt.title("PCA 2D Projection colored by true class")
     plt.legend()
     plt.tight_layout()
     plt.savefig(out_path, dpi=160)
@@ -332,78 +302,59 @@ def plot_confusion_matrix(mat: np.ndarray, out_path: Path) -> None:
     plt.close()
 
 
-# -----------------------------
-# CLI
-# -----------------------------
-
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Exercise 3: Multiclass classification with scratch MLP")
-    parser.add_argument("--samples", type=int, default=1500, help="Total number of samples")
-    parser.add_argument("--epochs", type=int, default=400, help="Training epochs")
-    parser.add_argument("--lr", type=float, default=0.05, help="Learning rate")
-    parser.add_argument("--hidden", type=int, nargs="+", default=[32, 32], help="Hidden layer sizes")
-    parser.add_argument("--seed", type=int, default=42, help="Random seed")
-    parser.add_argument("--class_sep", type=float, default=1.6, help="Class separability")
-    parser.add_argument("--flip_y", type=float, default=0.01, help="Label noise fraction")
-    parser.add_argument(
-        "--clusters",
-        type=int,
-        nargs=3,
-        default=[2, 3, 4],
-        help="Clusters per class for classes 0,1,2",
-    )
-    args = parser.parse_args()
+    # Defaults per report
+    samples = 1500
+    epochs = 400
+    lr = 0.05
+    hidden = [32, 32]
+    seed = 42
+    class_sep = 1.6
+    flip_y = 0.01
+    clusters = (2, 3, 4)
 
     out_dir = Path(__file__).parent
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Data
     X, y = generate_uneven_clusters_multiclass(
-        total_samples=args.samples,
-        class_cluster_counts=tuple(args.clusters),
+        total_samples=samples,
+        class_cluster_counts=clusters,
         n_features=4,
         n_informative=4,
         n_redundant=0,
-        class_sep=args.class_sep,
-        flip_y=args.flip_y,
-        seed=args.seed,
+        class_sep=class_sep,
+        flip_y=flip_y,
+        seed=seed,
     )
 
-    X_train, X_test, y_train, y_test = train_test_split_np(X, y, test_size=0.2, seed=args.seed)
+    X_train, X_test, y_train, y_test = train_test_split_np(X, y, test_size=0.2, seed=seed)
     X_train_s, X_test_s, mean, std = standardize_fit_transform(X_train, X_test)
 
-    # Model
-    model = MLPClassifier(
-        input_dim=4, hidden_layers=args.hidden, output_dim=3, learning_rate=args.lr, seed=args.seed
-    )
+    model = MLPClassifier(input_dim=4, hidden_layers=hidden, output_dim=3, learning_rate=lr, seed=seed)
 
-    # Train
-    losses = model.fit(X_train_s, y_train, epochs=args.epochs, num_classes=3)
+    losses = model.fit(X_train_s, y_train, epochs=epochs, num_classes=3)
 
-    # Evaluate
     yhat_train = model.predict(X_train_s)
     yhat_test = model.predict(X_test_s)
     acc = accuracy_score(y_test, yhat_test)
     mat = confusion_matrix_counts(y_test, yhat_test, num_classes=3)
 
-    # Save plots
     plot_training_loss(losses, out_dir / "training_loss_ex3.png")
     plot_pca_scatter(
         X_train_s, y_train, X_test_s, y_test, yhat_train, yhat_test, out_dir / "pca_scatter_ex3.png"
     )
     plot_confusion_matrix(mat, out_dir / "confusion_matrix_ex3.png")
 
-    # Save metrics
     metrics_text = (
         f"Accuracy: {acc:.4f}\n"
         f"Confusion Matrix (rows=true, cols=pred):\n{mat}\n"
         f"Final train loss: {losses[-1]:.6f}\n"
-        f"Hidden layers: {args.hidden}\n"
-        f"Learning rate: {args.lr}\n"
-        f"Epochs: {args.epochs}\n"
-        f"Seed: {args.seed}\n"
-        f"Class sep: {args.class_sep}, flip_y: {args.flip_y}, clusters: {tuple(args.clusters)}\n"
+        f"Hidden layers: {hidden}\n"
+        f"Learning rate: {lr}\n"
+        f"Epochs: {epochs}\n"
+        f"Seed: {seed}\n"
+        f"Class sep: {class_sep}, flip_y: {flip_y}, clusters: {clusters}\n"
     )
     (out_dir / "metrics_ex3.txt").write_text(metrics_text, encoding="utf-8")
     print(metrics_text)
