@@ -2,26 +2,54 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://linkolnr.github.io/neural.network/</loc>
-         <lastmod>2025-09-22</lastmod>
+         <lastmod>2025-10-27</lastmod>
     </url>
     <url>
          <loc>https://linkolnr.github.io/neural.network/exercise1-data/main/</loc>
-         <lastmod>2025-09-22</lastmod>
+         <lastmod>2025-10-27</lastmod>
     </url>
     <url>
          <loc>https://linkolnr.github.io/neural.network/exercise2-perceptron/main/</loc>
-         <lastmod>2025-09-22</lastmod>
+         <lastmod>2025-10-27</lastmod>
     </url>
     <url>
          <loc>https://linkolnr.github.io/neural.network/exercise3-MLP/main/</loc>
-         <lastmod>2025-09-22</lastmod>
+         <lastmod>2025-10-27</lastmod>
+    </url>
+    <url>
+         <loc>https://linkolnr.github.io/neural.network/exercise4-VAE/</loc>
+         <lastmod>2025-10-27</lastmod>
+    </url>
+    <url>
+         <loc>https://linkolnr.github.io/neural.network/exercise4-VAE/ANALYSIS/</loc>
+         <lastmod>2025-10-27</lastmod>
+    </url>
+    <url>
+         <loc>https://linkolnr.github.io/neural.network/exercise4-VAE/ARCHITECTURE_COMPARISON/</loc>
+         <lastmod>2025-10-27</lastmod>
+    </url>
+    <url>
+         <loc>https://linkolnr.github.io/neural.network/exercise4-VAE/IMPLEMENTATION_SUMMARY/</loc>
+         <lastmod>2025-10-27</lastmod>
+    </url>
+    <url>
+         <loc>https://linkolnr.github.io/neural.network/exercise4-VAE/SUBMISSION_GUIDE/</loc>
+         <lastmod>2025-10-27</lastmod>
+    </url>
+    <url>
+         <loc>https://linkolnr.github.io/neural.network/exercise4-VAE/explain/</loc>
+         <lastmod>2025-10-27</lastmod>
+    </url>
+    <url>
+         <loc>https://linkolnr.github.io/neural.network/exercise4-VAE/main/</loc>
+         <lastmod>2025-10-27</lastmod>
     </url>
     <url>
          <loc>https://linkolnr.github.io/neural.network/projeto/main/</loc>
-         <lastmod>2025-09-22</lastmod>
+         <lastmod>2025-10-27</lastmod>
     </url>
     <url>
          <loc>https://linkolnr.github.io/neural.network/thisdocumentation/main/</loc>
-         <lastmod>2025-09-22</lastmod>
+         <lastmod>2025-10-27</lastmod>
     </url>
 </urlset>
