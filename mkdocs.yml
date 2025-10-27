@@ -139,5 +139,5 @@ nav:
     - Exercício 1: ./exercise1-data/main.md
     - Exercício 2: ./exercise2-perceptron/main.md
     - Exercício 3: ./exercise3-MLP/main.md
-    # - Exercício 4: ./exercise4-mnist/main.md
+    - Exercício 4: ./exercise4-VAE/main.md
   # - Projeto: ./projeto/main.md
