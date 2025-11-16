@@ -15,10 +15,13 @@
 ## Entregas
 
 - [x] Exercício 1 - Data 05/09/2025
-- [ ] Exercício 2
-- [ ] Exercício 3 
-- [ ] Exercício 4 
-- [ ] Projeto
+- [x] Exercício 2
+- [x] Exercício 3 
+- [x] Exercício 4 
+- [x] Projetos
+    - [x] [Projeto 1](https://esdrasgc.github.io/customer-churn-prediction-kaggle/)
+    - [x] [Projeto 2](https://linkolnr.github.io/china-real-state-regression-kaggle/)
+    - [x] [Projeto 3](https://luccagkao.github.io/comfyui-experiment/)
 <!-- 
 ## Diagramas
 
